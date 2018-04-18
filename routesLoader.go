@@ -13,4 +13,5 @@ func LoadRoutes(env *controllers.Env, router *fasthttprouter.Router) {
 	router.DELETE("/api/users/:id", env.DeleteUser)
 
 	router.POST("/session/login", env.Login)
+	router.POST("/session/logout", env.Auth(env.Logout))
 }

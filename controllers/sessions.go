@@ -7,6 +7,7 @@ import (
 	"github.com/nethruster/linksh/models"
 	"github.com/sirupsen/logrus"
 	"time"
+	"strings"
 )
 
 func (env Env) Login(ctx *fasthttp.RequestCtx) {
@@ -73,5 +74,34 @@ func (env Env) Login(ctx *fasthttp.RequestCtx) {
 }
 
 func (env Env) Logout(ctx *fasthttp.RequestCtx) {
+	if cookie := ctx.Request.Header.Cookie("auth"); cookie != nil {
+		data := strings.Split(string(cookie), "|")
+		err := env.Db.Delete(models.Session{}, "id = ?", data[0]).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "Logout", "status": "Failed"}).Error(err.Error())
+			return
+		}
+		var cookie fasthttp.Cookie
+		cookie.SetKey("auth")
+		cookie.SetValue("")
+		cookie.SetHTTPOnly(true)
+		cookie.SetExpire(time.Unix(0, 0))
+		ctx.Response.Header.SetCookie(&cookie)
 
+		ctx.Response.Header.SetStatusCode(204)
+	} else if auth := ctx.Request.Header.Peek("auth"); auth != nil {
+		var data map[string]string
+		json.Unmarshal(auth, &data)
+
+		err := env.Db.Delete(models.Session{}, "id = ?", data["sessionId"]).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "Logout", "status": "Failed"}).Error(err.Error())
+			return
+		}
+		ctx.Response.Header.SetStatusCode(204)
+	}
 }
