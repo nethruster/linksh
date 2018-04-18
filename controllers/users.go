@@ -37,7 +37,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 	id := ctx.UserValue("id")
 	ctx.SetContentType("application/json")
 
-	env.Db.Where("id = ?", id).Take(&user)
+	err := env.Db.Where("id = ?", id).Take(&user).Error
+	if err != nil && err.Error() == "record not found" {
+		ctx.Response.Header.SetStatusCode(500)
+		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+		env.Log.WithFields(logrus.Fields{"event": "Login", "status": "Failed"}).Error(err.Error())
+		return
+	}
 
 	if user.Id == "" {
 		ctx.Response.Header.SetStatusCode(404)

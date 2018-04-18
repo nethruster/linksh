@@ -51,6 +51,15 @@ func HashPassword(password []byte) ([]byte, error) {
 	return bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 }
 
+func (u *User) CheckIfCorrectPassword(plainPassword []byte) bool {
+	err := bcrypt.CompareHashAndPassword(u.Password, plainPassword)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 // Validations
 func ValidateUsername(username string) error {
 	if username == "" {

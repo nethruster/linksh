@@ -20,12 +20,13 @@ func main() {
 		log.Fatal(err)
 	}
 	db, err := gorm.Open("mysql", conf.Database.GetConnectionString())
-	//db.SetLogger(log)
 	if err != nil {
 		println("Error while connecting to the database")
 		os.Exit(1009)
 	}
 	defer db.Close()
+
+	conf.Server.AdjustLogSettings(log, db)
 
 	db.AutoMigrate(&models.User{}, &models.Link{}, &models.Session{})
 
@@ -36,8 +37,6 @@ func main() {
 	}
 
 	LoadRoutes(&env, router)
-	db.LogMode(true)
-
 
 	log.Fatal(fasthttp.ListenAndServe("localhost:8080", router.Handler))
 }
