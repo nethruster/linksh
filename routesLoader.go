@@ -7,10 +7,10 @@ import (
 
 func LoadRoutes(env *controllers.Env, router *fasthttprouter.Router) {
 	router.GET("/api/users", env.Auth(env.GetUsers))
-	router.GET("/api/users/:id", env.GetUser)
-	router.POST("/api/users", env.CreateUser)
-	router.PUT("/api/users/:id", env.EditUser)
-	router.DELETE("/api/users/:id", env.DeleteUser)
+    router.GET("/api/users/:id", env.Auth(env.GetUser))
+    router.POST("/api/users", env.Auth(env.CreateUser))
+    router.PUT("/api/users/:id", env.Auth(env.EditUser))
+    router.DELETE("/api/users/:id", env.Auth(env.DeleteUser))
 
 	router.POST("/session/login", env.Login)
 	router.POST("/session/logout", env.Auth(env.Logout))

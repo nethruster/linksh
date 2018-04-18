@@ -10,12 +10,13 @@ import (
 )
 
 type User struct {
-	Id string `gorm:"primary_key; type:char(36)" json:"id"`
-	Username string `json:"username"`
-	Email string `gorm:"UNIQUE_INDEX" json:"email"`
-	Password []byte `gorm:"type:binary(60)" json:"-"`
-	Apikey string `gorm:"UNIQUE_INDEX; type:char(36)" json:"apikey"`
-	Links []Link `json:"links"`
+    Id       string    `gorm:"primary_key; type:char(36)" json:"id"`
+    Username string    `json:"username"`
+    Email    string    `gorm:"UNIQUE_INDEX" json:"email"`
+    Password []byte    `gorm:"type:binary(60)" json:"-"`
+    Apikey   string    `gorm:"UNIQUE_INDEX; type:char(36)" json:"apikey"`
+    IsAdmin  bool      `gorm:"DEFAULT:false"`
+    Links    []Link    `json:"links"`
 	Sessions []Session `json:"sessions"`
 
 	CreatedAt time.Time `json:"createdAt"`
