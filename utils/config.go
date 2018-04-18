@@ -48,6 +48,10 @@ func (config ServerConfig) AdjustLogSettings(log *logrus.Logger, db *gorm.DB) {
 	db.LogMode(config.LogDatabaseQueries)
 }
 
+func (config ServerConfig) GetListenString() string {
+	return fmt.Sprintf("%v:%v", config.Address, config.Port)
+}
+
 func (config DatabaseConfig) GetConnectionString() string {
 	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local",
 		config.User,

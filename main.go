@@ -38,5 +38,6 @@ func main() {
 
 	LoadRoutes(&env, router)
 
-	log.Fatal(fasthttp.ListenAndServe("localhost:8080", router.Handler))
+	log.WithField("event", "Start").Info("Server listening at: ", conf.Server.GetListenString())
+	log.Fatal(fasthttp.ListenAndServe(conf.Server.GetListenString(), router.Handler))
 }
