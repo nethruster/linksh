@@ -32,9 +32,15 @@ func (env Env) GetUsers(ctx *fasthttp.RequestCtx) {
 		query = query.Limit(limit)
 	}
 
-	query.Find(&users)
+    err := query.Find(&users).Error
+    if err != nil {
+        ctx.Response.Header.SetStatusCode(500)
+        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+        env.Log.WithFields(logrus.Fields{"event": "Lists sessions", "status": "Failed"}).Error(err.Error())
+        return
+    }
 
-	ctx.SetContentType("application/json")
+    ctx.SetContentType("application/json")
 	json.NewEncoder(ctx).Encode(&users)
 }
 
@@ -51,7 +57,7 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
         if err != nil && err.Error() == "record not found" {
             ctx.Response.Header.SetStatusCode(500)
             fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "Login", "status": "Failed"}).Error(err.Error())
+            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
             return
         }
 
@@ -78,7 +84,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 			query = query.Limit(limit)
 		}
 
-		query.Model(&user).Related(&sessions)
+        err := query.Model(&user).Related(&sessions).Error
+        if err != nil {
+            ctx.Response.Header.SetStatusCode(500)
+            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+            return
+        }
 
 		user.Sessions = sessions
 	}
@@ -94,7 +106,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 			query = query.Limit(limit)
 		}
 
-		query.Model(&user).Related(&links)
+        err := query.Model(&user).Related(&links).Error
+        if err != nil {
+            ctx.Response.Header.SetStatusCode(500)
+            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+            return
+        }
 
 		user.Links = links
 	}
