@@ -144,6 +144,11 @@ func checkLoginWithSession(db *gorm.DB, sessionId, userId string) (bool, models.
 			return false, models.User{}, err
 		}
 
+        err = models.UpdateSessionLastUsed(db, session)
+        if err != nil {
+            return false, models.User{}, err
+        }
+
 		return true, user, nil
 	} else {
 		return false, models.User{}, nil
