@@ -7,11 +7,11 @@ import (
 )
 
 type Session struct {
-	Id         string    `gorm:"primary_key; type:char(36)" json:"id"`
-	UserId     string
-	ExpiresAt  time.Time `json:"lastUsedAt"`
-	LastUsedAt time.Time `json:"lastUsedAt"`
-	CreatedAt  time.Time `json:"createdAt"`
+    Id         string    `gorm:"primary_key; type:char(36)" json:"id"`
+    UserId     string    `gorm:"type:char(36)"`
+    ExpiresAt  time.Time `json:"lastUsedAt"`
+    LastUsedAt time.Time `json:"lastUsedAt"`
+    CreatedAt  time.Time `json:"createdAt"`
 }
 
 func CreateSession(db *gorm.DB, owner User) (Session, error) {
