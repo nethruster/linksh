@@ -61,7 +61,7 @@ func (env Env) GetSession(ctx *fasthttp.RequestCtx) {
         }
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+        env.Log.WithFields(logrus.Fields{"event": "Get session", "status": "Failed"}).Error(err.Error())
         return
     }
     if !currentUser.IsAdmin && session.UserId != currentUser.Id {
@@ -82,7 +82,7 @@ func (env Env) CreateSession(ctx *fasthttp.RequestCtx) {
     if err != nil {
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+        env.Log.WithFields(logrus.Fields{"event": "Create session", "status": "Failed"}).Error(err.Error())
         return
     }
 
@@ -105,7 +105,7 @@ func (env Env) DeleteSession(ctx *fasthttp.RequestCtx) {
         }
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+        env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
         return
     }
     if !currentUser.IsAdmin && session.UserId != currentUser.Id {
@@ -119,7 +119,7 @@ func (env Env) DeleteSession(ctx *fasthttp.RequestCtx) {
     if err != nil {
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+        env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
         return
     }
 
