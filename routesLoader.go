@@ -12,6 +12,12 @@ func LoadRoutes(env *controllers.Env, router *fasthttprouter.Router) {
     router.PUT("/api/users/:id", env.Auth(env.EditUser))
     router.DELETE("/api/users/:id", env.Auth(env.DeleteUser))
 
+    router.GET("/api/links", env.Auth(env.GetLinks))
+    router.GET("/api/links/:id", env.Auth(env.GetLink))
+    router.POST("/api/links", env.Auth(env.CreateLink))
+    router.PUT("/api/links/:id", env.Auth(env.EditLink))
+    router.DELETE("/api/links/:id", env.Auth(env.DeleteLink))
+
     router.GET("/api/sessions", env.Auth(env.GetSessions))
     router.GET("/api/sessions/:id", env.Auth(env.GetSession))
     router.POST("/api/sessions", env.Auth(env.CreateSession))
