@@ -120,6 +120,12 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 	json.NewEncoder(ctx).Encode(&user)
 }
 
+type createUserRequest struct {
+    Username string `json:"username"`
+    Email    string `json:"email"`
+    Password string `json:"password"`
+}
+
 func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
     if !ctx.UserValue("currentUser").(models.User).IsAdmin {
         ctx.Response.Header.SetStatusCode(401)
@@ -128,16 +134,16 @@ func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
         return
     }
 
-	var data map[string] string
+    var data createUserRequest
 	ctx.SetContentType("application/json")
 
 	json.Unmarshal(ctx.Request.Body(), &data)
 
 
 	user := models.User{
-		Username: data["username"],
-		Email: data["email"],
-		Password: []byte(data["password"]),
+        Username: data.Username,
+        Email:    data.Email,
+        Password: []byte(data.Password),
 	}
 
 	errs := user.ValidateUser()
@@ -176,9 +182,17 @@ func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
 	env.Log.WithFields(logrus.Fields{"event": "Create user", "status": "successful"}).Info(fmt.Sprintf(`A user was created with Id = '%v' and Email = '%v'`, user.Id, user.Email))
 }
 
+type editUserRequest struct {
+    Username         string `json:"username"`
+    Email            string `json:"email"`
+    Password         string `json:"password"`
+    OriginalPassword string `json:"originalPassword"`
+    Apikey           bool   `json:"apikey"`
+}
+
 func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
     currentUser := ctx.UserValue("currentUser").(models.User)
-    var data map[string]string
+    var data editUserRequest
 	var user models.User
 	changes := make(map[string] interface{})
 	id := ctx.UserValue("id")
@@ -186,7 +200,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 
 	json.Unmarshal(ctx.Request.Body(), &data)
 
-	if username := data["username"]; username != "" {
+    if username := data.Username; username != "" {
 		if err := models.ValidateUsername(username); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
 			fmt.Fprintf(ctx, `{"error": "%v"}`, err)
@@ -194,7 +208,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 		}
 		changes["Username"] = username
 	}
-	if email := data["email"]; email != "" {
+    if email := data.Email; email != "" {
 		if err := models.ValidateEmail(email); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
 			fmt.Fprintf(ctx, `{"error": "%v"}`, err)
@@ -202,7 +216,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 		}
 		changes["Email"] = email
 	}
-	if password := data["password"]; password != "" {
+    if password := data.Password; password != "" {
 		passwordBytes := []byte(password)
 		if err := models.ValidatePassword(passwordBytes); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
@@ -220,7 +234,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 
 		changes["Password"] = passwordBytes
 	}
-	if data["apikey"] == "true" {
+    if data.Apikey {
 		apikey, err := models.GenerateUserApiKey()
 		if err != nil {
 			ctx.Response.Header.SetStatusCode(500)
@@ -233,7 +247,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 	}
     if currentUser.Id == id {
         user = currentUser
-        if changes["Password"] != nil && !user.CheckIfCorrectPassword([]byte(data["originalPassword"])) {
+        if changes["Password"] != nil && !user.CheckIfCorrectPassword([]byte(data.OriginalPassword)) {
             ctx.Response.Header.SetStatusCode(400)
             fmt.Fprint(ctx, `{"error": "Missing or invalid originalPassword"}`)
             return
