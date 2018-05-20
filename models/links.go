@@ -4,11 +4,12 @@ import (
     "time"
     "github.com/jinzhu/gorm"
     "github.com/matoous/go-nanoid"
+    "strings"
 )
 
 type Link struct {
-	Id      string `gorm:"primary_key"`
-	Content string
+    Id      string `gorm:"primary_key" json:"id"`
+    Content string `json:"content"`
     Hits    uint   `gorm:"DEFAULT:0"`
     UserId  string `gorm:"type:char(36)"`
 
@@ -35,6 +36,10 @@ func CreateLink(db *gorm.DB, ownerId, customId, content string) (Link, error) {
     }
 
     err := db.Create(&link).Error
+    if err != nil && customId == "" && strings.Contains(err.Error(), "Duplicate entry") {
+        return CreateLink(db, ownerId, customId, content)
+    }
+
     return link, err
 }
 func GenerateLinkId() (string, error) {

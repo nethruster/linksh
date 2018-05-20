@@ -7,6 +7,7 @@ import (
     "github.com/sirupsen/logrus"
     "encoding/json"
     "strconv"
+    "strings"
 )
 
 func (env Env) GetLinks(ctx *fasthttp.RequestCtx) {
@@ -87,6 +88,11 @@ func (env Env) CreateLink(ctx *fasthttp.RequestCtx) {
     ctx.SetContentType("application/json")
 
     if err != nil {
+        if strings.Contains(err.Error(), "Duplicate entry") {
+            ctx.Response.Header.SetStatusCode(400)
+            fmt.Fprint(ctx, `{"error": "User already exists"}`)
+            return
+        }
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
         env.Log.WithFields(logrus.Fields{"event": "Create link", "status": "Failed"}).Error(err.Error())
