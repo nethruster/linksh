@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
 	"errors"
+    "fmt"
 )
 
 type User struct {
@@ -24,6 +25,32 @@ type User struct {
 }
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func GetUsers(db *gorm.DB, email string, offset, limit int) ([]User, error) {
+    var users []User
+    query := db
+
+    if email != "" {
+        query = query.Where("email like ?", fmt.Sprintf("%%%v%%", email))
+    }
+    if offset != 0 {
+        query = query.Offset(offset)
+    }
+    if limit != 0 {
+        query = query.Limit(limit)
+    }
+
+    err := query.Find(&users).Error
+    return users, err
+}
+
+func GetUser(db *gorm.DB, id string) (User, error) {
+    var user User
+    err := db.Where("id = ?", id).Take(&user).Error
+
+    return user, err
+}
+
 
 func (u *User) SaveToDatabase(db *gorm.DB) error {
 	id, err := GenerateUserId()

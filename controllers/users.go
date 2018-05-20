@@ -18,21 +18,19 @@ func (env Env) GetUsers(ctx *fasthttp.RequestCtx) {
         return
     }
 
-	var users []models.User
 	args := ctx.QueryArgs()
-	query := env.Db
+    email := string(args.Peek("email"))
+    offset, limit := 0, 0
 
-	if email := string(args.Peek("email")); email != "" {
-		query = query.Where("email like ?", fmt.Sprintf("%%%v%%", email))
-	}
-	if offset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil && offset != 0 {
-		query = query.Offset(offset)
-	}
-	if limit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil && limit != 0 {
-		query = query.Limit(limit)
-	}
+    if pOffset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil {
+        offset = pOffset
+    }
+    if pLimit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil {
+        limit = pLimit
+    }
 
-    err := query.Find(&users).Error
+    users, err := models.GetUsers(env.Db, email, offset, limit)
+
     if err != nil {
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
@@ -48,13 +46,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
     currentUser := ctx.UserValue("currentUser").(models.User)
 	var user models.User
 	args := ctx.QueryArgs()
-	id := ctx.UserValue("id")
+    id := ctx.UserValue("id").(string)
 	ctx.SetContentType("application/json")
     if currentUser.Id == id {
         user = currentUser
     } else if currentUser.IsAdmin {
-        err := env.Db.Where("id = ?", id).Take(&user).Error
-        if err != nil && err.Error() == "record not found" {
+        user, err := models.GetUser(env.Db, id)
+        if err != nil && err.Error() != "record not found" {
             ctx.Response.Header.SetStatusCode(500)
             fmt.Fprint(ctx, `{"error": "Internal server error"}`)
             env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
