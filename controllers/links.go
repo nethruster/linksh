@@ -72,12 +72,17 @@ func (env Env) GetLink(ctx *fasthttp.RequestCtx) {
     json.NewEncoder(ctx).Encode(&link)
 }
 
+type createLinkRequest struct {
+    CustomId string `json:"customId"`
+    Content  string `json:"content"`
+}
+
 func (env Env) CreateLink(ctx *fasthttp.RequestCtx) {
     currentUser := ctx.UserValue("currentUser").(models.User)
-    var data map[string]string
+    var data createLinkRequest
     json.Unmarshal(ctx.Request.Body(), &data)
 
-    link, err := models.CreateLink(env.Db, currentUser.Id, data["customId"], data["content"])
+    link, err := models.CreateLink(env.Db, currentUser.Id, data.CustomId, data.Content)
 
     ctx.SetContentType("application/json")
 
@@ -90,9 +95,14 @@ func (env Env) CreateLink(ctx *fasthttp.RequestCtx) {
 
     json.NewEncoder(ctx).Encode(&link)
 }
+
+type editLinkRequest struct {
+    Content string `json:"content"`
+}
+
 func (env Env) EditLink(ctx *fasthttp.RequestCtx) {
     currentUser := ctx.UserValue("currentUser").(models.User)
-    var data map[string]string
+    var data editLinkRequest
     var link models.Link
     id := ctx.UserValue("id")
     ctx.SetContentType("application/json")
@@ -118,7 +128,7 @@ func (env Env) EditLink(ctx *fasthttp.RequestCtx) {
         return
     }
 
-    err = env.Db.Model(&link).Update("Content", data["content"]).Error
+    err = env.Db.Model(&link).Update("Content", data.Content).Error
     if err != nil {
         ctx.Response.Header.SetStatusCode(500)
         fmt.Fprint(ctx, `{"error": "Internal server error"}`)
