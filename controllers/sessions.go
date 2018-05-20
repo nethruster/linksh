@@ -126,17 +126,24 @@ func (env Env) DeleteSession(ctx *fasthttp.RequestCtx) {
     ctx.Response.Header.SetStatusCode(204)
 }
 
+type loginRequest struct {
+    Email     string `json:"email"`
+    Password  string `json:"password"`
+    NotExpire bool   `json:"notExpire"`
+    UseCookie bool   `json:"useCookie"`
+}
+
 func (env Env) Login(ctx *fasthttp.RequestCtx) {
-	var data map[string]string
+    var data loginRequest
 	var user models.User
 	ctx.SetContentType("application/json")
 	json.Unmarshal(ctx.Request.Body(), &data)
-	if data["email"] == "" || data["password"] == "" {
+    if data.Email == "" || data.Password == "" {
 		ctx.Response.Header.SetStatusCode(400)
 		fmt.Fprint(ctx, `{"error": "Missing email or password"}`)
 	}
 
-	err := env.Db.Where("email = ?", data["email"]).Take(&user).Error
+    err := env.Db.Where("email = ?", data.Email).Take(&user).Error
 	if err != nil && err.Error() != "record not found" {
 		ctx.Response.Header.SetStatusCode(500)
 		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
@@ -144,7 +151,7 @@ func (env Env) Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if user.Id == "" || !user.CheckIfCorrectPassword([]byte(data["password"])) {
+    if user.Id == "" || !user.CheckIfCorrectPassword([]byte(data.Password)) {
 		ctx.Response.Header.SetStatusCode(400)
 		fmt.Fprint(ctx, `{"error": "The email or the password are invalid"}`)
 		return
@@ -152,7 +159,7 @@ func (env Env) Login(ctx *fasthttp.RequestCtx) {
 
 	var expires time.Time
 
-	if data["notExpire"] == "true" {
+    if data.NotExpire {
 		expires = time.Now().AddDate(100, 0, 0)
 	} else {
 		expires = time.Now().AddDate(0, 0, 1)
@@ -177,7 +184,7 @@ func (env Env) Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if data["useCookie"] == "true" {
+    if data.UseCookie {
 		var cookie fasthttp.Cookie
 		cookie.SetKey("auth")
 		cookie.SetValue(fmt.Sprintf("%v|%v", session.Id, user.Id))
@@ -208,10 +215,10 @@ func (env Env) Logout(ctx *fasthttp.RequestCtx) {
 
 		ctx.Response.Header.SetStatusCode(204)
 	} else if auth := ctx.Request.Header.Peek("auth"); auth != nil {
-		var data map[string]string
+        var data authHeaderData
 		json.Unmarshal(auth, &data)
 
-		err := env.Db.Delete(models.Session{}, "id = ?", data["sessionId"]).Error
+        err := env.Db.Delete(models.Session{}, "id = ?", data.SessionId).Error
 		if err != nil {
 			ctx.Response.Header.SetStatusCode(500)
 			fmt.Fprint(ctx, `{"error": "Internal server error"}`)

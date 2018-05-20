@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+type authHeaderData struct {
+    UserId    string `json:"userId"`
+    SessionId string `json:"sessionId"`
+}
+
 func (env Env) Auth(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
 		print(string(ctx.Request.Header.Cookie("auth")))
@@ -44,10 +49,10 @@ func (env Env) Auth(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 			}
 
 		} else if auth := ctx.Request.Header.Peek("auth"); auth != nil {
-			var data map[string]string
+            var data authHeaderData
 			json.Unmarshal(auth, &data)
 
-			valid, user, err := checkLoginWithSession(env.Db, data["sessionId"], data["userId"])
+            valid, user, err := checkLoginWithSession(env.Db, data.SessionId, data.UserId)
 
 			if err != nil {
 				ctx.Response.Header.SetStatusCode(500)
