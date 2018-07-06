@@ -1,230 +1,126 @@
 package controllers
 
 import (
-	"github.com/erikdubbelboer/fasthttp"
 	"encoding/json"
 	"fmt"
+	"github.com/erikdubbelboer/fasthttp"
 	"github.com/nethruster/linksh/models"
 	"github.com/sirupsen/logrus"
-	"time"
-	"strings"
-    "strconv"
+	"strconv"
 )
 
 func (env Env) GetSessions(ctx *fasthttp.RequestCtx) {
-    currentUser := ctx.UserValue("currentUser").(models.User)
-    args := ctx.QueryArgs()
-    var sessions []models.Session
-    ownerId := string(args.Peek("ownerId"))
-    if ownerId != currentUser.Id && !currentUser.IsAdmin {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
-    query := env.Db
-    if offset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil && offset != 0 {
-        query = query.Offset(offset)
-    }
-    if limit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil && limit != 0 {
-        query = query.Limit(limit)
-    }
-    if ownerId != "" {
-        query = query.Where("user_id = ?", ownerId)
-    }
+	currentUser := ctx.UserValue("currentUser").(models.User)
+	args := ctx.QueryArgs()
+	var sessions []models.Session
+	ownerId := string(args.Peek("ownerId"))
+	if ownerId != currentUser.Id && !currentUser.IsAdmin {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
+	query := env.Db
+	if offset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil && offset != 0 {
+		query = query.Offset(offset)
+	}
+	if limit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil && limit != 0 {
+		query = query.Limit(limit)
+	}
+	if ownerId != "" {
+		query = query.Where("user_id = ?", ownerId)
+	}
 
-    err := query.Find(&sessions).Error
-    if err != nil {
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Lists sessions", "status": "Failed"}).Error(err.Error())
-        return
-    }
+	err := query.Find(&sessions).Error
+	if err != nil {
+		ctx.Response.Header.SetStatusCode(500)
+		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+		env.Log.WithFields(logrus.Fields{"event": "Lists sessions", "status": "Failed"}).Error(err.Error())
+		return
+	}
 
-    ctx.SetContentType("application/json")
-    json.NewEncoder(ctx).Encode(&sessions)
+	ctx.SetContentType("application/json")
+	json.NewEncoder(ctx).Encode(&sessions)
 }
 
 func (env Env) GetSession(ctx *fasthttp.RequestCtx) {
-    var session models.Session
-    currentUser := ctx.UserValue("currentUser").(models.User)
-    id := ctx.UserValue("id")
+	var session models.Session
+	currentUser := ctx.UserValue("currentUser").(models.User)
+	id := ctx.UserValue("id")
 
-    ctx.SetContentType("application/json")
+	ctx.SetContentType("application/json")
 
-    err := env.Db.Where("id = ?", id).Take(&session).Error
-    if err != nil {
-        if err.Error() == "record not found" {
-            ctx.Response.Header.SetStatusCode(404)
-            fmt.Fprint(ctx, `{"error": "Session not found"}`)
-            return
-        }
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Get session", "status": "Failed"}).Error(err.Error())
-        return
-    }
-    if !currentUser.IsAdmin && session.UserId != currentUser.Id {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+	err := env.Db.Where("id = ?", id).Take(&session).Error
+	if err != nil {
+		if err.Error() == "record not found" {
+			ctx.Response.Header.SetStatusCode(404)
+			fmt.Fprint(ctx, `{"error": "Session not found"}`)
+			return
+		}
+		ctx.Response.Header.SetStatusCode(500)
+		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+		env.Log.WithFields(logrus.Fields{"event": "Get session", "status": "Failed"}).Error(err.Error())
+		return
+	}
+	if !currentUser.IsAdmin && session.UserId != currentUser.Id {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
-    json.NewEncoder(ctx).Encode(&session)
+	json.NewEncoder(ctx).Encode(&session)
 }
 func (env Env) CreateSession(ctx *fasthttp.RequestCtx) {
-    currentUser := ctx.UserValue("currentUser").(models.User)
-    session, err := models.CreateSession(env.Db, currentUser)
+	currentUser := ctx.UserValue("currentUser").(models.User)
+	session, err := models.CreateSession(env.Db, currentUser)
 
-    ctx.SetContentType("application/json")
+	ctx.SetContentType("application/json")
 
-    if err != nil {
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Create session", "status": "Failed"}).Error(err.Error())
-        return
-    }
+	if err != nil {
+		ctx.Response.Header.SetStatusCode(500)
+		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+		env.Log.WithFields(logrus.Fields{"event": "Create session", "status": "Failed"}).Error(err.Error())
+		return
+	}
 
-    json.NewEncoder(ctx).Encode(&session)
+	ctx.Response.Header.SetStatusCode(201)
+	json.NewEncoder(ctx).Encode(&session)
 }
 
 func (env Env) DeleteSession(ctx *fasthttp.RequestCtx) {
-    var session models.Session
-    currentUser := ctx.UserValue("currentUser").(models.User)
-    id := ctx.UserValue("id")
+	var session models.Session
+	currentUser := ctx.UserValue("currentUser").(models.User)
+	id := ctx.UserValue("id")
 
-    ctx.SetContentType("application/json")
-
-    err := env.Db.Where("id = ?", id).Take(&session).Error
-    if err != nil {
-        if err.Error() == "record not found" {
-            ctx.Response.Header.SetStatusCode(404)
-            fmt.Fprint(ctx, `{"error": "Session not found"}`)
-            return
-        }
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
-        return
-    }
-    if !currentUser.IsAdmin && session.UserId != currentUser.Id {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
-
-    err = env.Db.Delete(&session).Error
-    if err != nil {
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
-        return
-    }
-
-    ctx.Response.Header.SetStatusCode(204)
-}
-
-type loginRequest struct {
-    Email     string `json:"email"`
-    Password  string `json:"password"`
-    NotExpire bool   `json:"notExpire"`
-    UseCookie bool   `json:"useCookie"`
-}
-
-func (env Env) Login(ctx *fasthttp.RequestCtx) {
-    var data loginRequest
-	var user models.User
 	ctx.SetContentType("application/json")
-	json.Unmarshal(ctx.Request.Body(), &data)
-    if data.Email == "" || data.Password == "" {
-		ctx.Response.Header.SetStatusCode(400)
-		fmt.Fprint(ctx, `{"error": "Missing email or password"}`)
-	}
 
-    err := env.Db.Where("email = ?", data.Email).Take(&user).Error
-	if err != nil && err.Error() != "record not found" {
+	err := env.Db.Where("id = ?", id).Take(&session).Error
+	if err != nil {
+		if err.Error() == "record not found" {
+			ctx.Response.Header.SetStatusCode(404)
+			fmt.Fprint(ctx, `{"error": "Session not found"}`)
+			return
+		}
 		ctx.Response.Header.SetStatusCode(500)
 		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-		env.Log.WithFields(logrus.Fields{"event": "Login", "status": "Failed"}).Error(err.Error())
+		env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
+		return
+	}
+	if !currentUser.IsAdmin && session.UserId != currentUser.Id {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
 		return
 	}
 
-    if user.Id == "" || !user.CheckIfCorrectPassword([]byte(data.Password)) {
-		ctx.Response.Header.SetStatusCode(400)
-		fmt.Fprint(ctx, `{"error": "The email or the password are invalid"}`)
-		return
-	}
-
-	var expires time.Time
-
-    if data.NotExpire {
-		expires = time.Now().AddDate(100, 0, 0)
-	} else {
-		expires = time.Now().AddDate(0, 0, 1)
-	}
-	id, err := models.GenerateSessionId()
+	err = env.Db.Delete(&session).Error
 	if err != nil {
 		ctx.Response.Header.SetStatusCode(500)
 		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-		env.Log.WithFields(logrus.Fields{"event": "Login", "status": "Failed"}).Error(err.Error())
-		return
-	}
-	session := models.Session{
-		Id:        id,
-		UserId:    user.Id,
-		ExpiresAt: expires,
-	}
-	err = env.Db.Create(&session).Error
-	if err != nil {
-		ctx.Response.Header.SetStatusCode(500)
-		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-		env.Log.WithFields(logrus.Fields{"event": "Login", "status": "Failed"}).Error(err.Error())
+		env.Log.WithFields(logrus.Fields{"event": "Delete session", "status": "Failed"}).Error(err.Error())
 		return
 	}
 
-    if data.UseCookie {
-		var cookie fasthttp.Cookie
-		cookie.SetKey("auth")
-		cookie.SetValue(fmt.Sprintf("%v|%v", session.Id, user.Id))
-		cookie.SetHTTPOnly(true)
-		cookie.SetExpire(session.ExpiresAt.AddDate(0, 0, 2))
-		ctx.Response.Header.SetCookie(&cookie)
-	}
-
-	fmt.Fprintf(ctx, `{"sessionId": "%v", "userId": "%v", "expiresAt": "%v"}"`, session.Id, user.Id, session.ExpiresAt)
-}
-
-func (env Env) Logout(ctx *fasthttp.RequestCtx) {
-	if cookie := ctx.Request.Header.Cookie("auth"); cookie != nil {
-		data := strings.Split(string(cookie), "|")
-		err := env.Db.Delete(models.Session{}, "id = ?", data[0]).Error
-		if err != nil {
-			ctx.Response.Header.SetStatusCode(500)
-			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-			env.Log.WithFields(logrus.Fields{"event": "Logout", "status": "Failed"}).Error(err.Error())
-			return
-		}
-		var cookie fasthttp.Cookie
-		cookie.SetKey("auth")
-		cookie.SetValue("")
-		cookie.SetHTTPOnly(true)
-		cookie.SetExpire(time.Unix(0, 0))
-		ctx.Response.Header.SetCookie(&cookie)
-
-		ctx.Response.Header.SetStatusCode(204)
-	} else if auth := ctx.Request.Header.Peek("auth"); auth != nil {
-        var data authHeaderData
-		json.Unmarshal(auth, &data)
-
-        err := env.Db.Delete(models.Session{}, "id = ?", data.SessionId).Error
-		if err != nil {
-			ctx.Response.Header.SetStatusCode(500)
-			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-			env.Log.WithFields(logrus.Fields{"event": "Logout", "status": "Failed"}).Error(err.Error())
-			return
-		}
-		ctx.Response.Header.SetStatusCode(204)
-	}
+	ctx.Response.Header.SetStatusCode(204)
 }

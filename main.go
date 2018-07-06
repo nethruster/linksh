@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/jinzhu/gorm"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/thehowl/fasthttprouter"
 	"github.com/erikdubbelboer/fasthttp"
-	"github.com/nethruster/linksh/utils"
-	"os"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	"github.com/nethruster/linksh/controllers"
 	"github.com/nethruster/linksh/models"
+	"github.com/nethruster/linksh/utils"
+	"github.com/sirupsen/logrus"
+	"github.com/thehowl/fasthttprouter"
+	"os"
 )
 
 func main() {
@@ -18,6 +18,7 @@ func main() {
 	conf, err := utils.ParseConfigFile("config.ini")
 	if err != nil {
 		log.Fatal(err)
+		os.Exit(-2)
 	}
 	db, err := gorm.Open("mysql", conf.Database.GetConnectionString())
 	if err != nil {
@@ -32,8 +33,8 @@ func main() {
 
 	env := controllers.Env{
 		Config: conf,
-		Db: db,
-		Log: log,
+		Db:     db,
+		Log:    log,
 	}
 
 	LoadRoutes(&env, router)

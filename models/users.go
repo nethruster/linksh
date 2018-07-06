@@ -1,23 +1,23 @@
 package models
 
 import (
-	"time"
+	"errors"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/matoous/go-nanoid"
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
-	"errors"
-    "fmt"
+	"time"
 )
 
 type User struct {
-    Id       string    `gorm:"primary_key; type:char(36)" json:"id"`
-    Username string    `json:"username"`
-    Email    string    `gorm:"UNIQUE_INDEX" json:"email"`
-    Password []byte    `gorm:"type:binary(60)" json:"-"`
-    Apikey   string    `gorm:"UNIQUE_INDEX; type:char(36)" json:"apikey"`
-    IsAdmin  bool      `gorm:"DEFAULT:false"`
-    Links    []Link    `json:"links"`
+	Id       string    `gorm:"primary_key; type:char(36)" json:"id"`
+	Username string    `json:"username"`
+	Email    string    `gorm:"UNIQUE_INDEX" json:"email"`
+	Password []byte    `gorm:"type:binary(60)" json:"-"`
+	Apikey   string    `gorm:"UNIQUE_INDEX; type:char(36)" json:"apikey"`
+	IsAdmin  bool      `gorm:"DEFAULT:false" json:"isAdmin"`
+	Links    []Link    `json:"links"`
 	Sessions []Session `json:"sessions"`
 
 	CreatedAt time.Time `json:"createdAt"`
@@ -27,36 +27,37 @@ type User struct {
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func GetUsers(db *gorm.DB, email string, offset, limit int) ([]User, error) {
-    var users []User
-    query := db
+	var users []User
+	query := db
 
-    if email != "" {
-        query = query.Where("email like ?", fmt.Sprintf("%%%v%%", email))
-    }
-    if offset != 0 {
-        query = query.Offset(offset)
-    }
-    if limit != 0 {
-        query = query.Limit(limit)
-    }
+	if email != "" {
+		query = query.Where("email like ?", fmt.Sprintf("%%%v%%", email))
+	}
+	if offset != 0 {
+		query = query.Offset(offset)
+	}
+	if limit != 0 {
+		query = query.Limit(limit)
+	}
 
-    err := query.Find(&users).Error
-    return users, err
+	err := query.Find(&users).Error
+	return users, err
 }
 
 func GetUser(db *gorm.DB, id string) (User, error) {
-    var user User
-    err := db.Where("id = ?", id).Take(&user).Error
+	var user User
+	err := db.Where("id = ?", id).Take(&user).Error
 
-    return user, err
+	return user, err
 }
-
 
 func (u *User) SaveToDatabase(db *gorm.DB) error {
 	id, err := GenerateUserId()
-	apikey,err := GenerateUserApiKey()
+	apikey, err := GenerateUserApiKey()
 	hash, err := HashPassword(u.Password)
-	if err != nil {return err}
+	if err != nil {
+		return err
+	}
 
 	u.Id = id
 	u.Links = nil
@@ -110,7 +111,7 @@ func ValidateEmail(email string) error {
 	}
 }
 func ValidatePassword(password []byte) error {
-	if len(password) == 0  {
+	if len(password) == 0 {
 		return errors.New("Missing password")
 	} else {
 		return nil

@@ -2,74 +2,75 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/nethruster/linksh/models"
 	"fmt"
 	"github.com/erikdubbelboer/fasthttp"
-	"strings"
+	"github.com/nethruster/linksh/models"
 	"github.com/sirupsen/logrus"
 	"strconv"
+	"strings"
 )
 
 func (env Env) GetUsers(ctx *fasthttp.RequestCtx) {
-    if !ctx.UserValue("currentUser").(models.User).IsAdmin {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+	if !ctx.UserValue("currentUser").(models.User).IsAdmin {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
 	args := ctx.QueryArgs()
-    email := string(args.Peek("email"))
-    offset, limit := 0, 0
+	email := string(args.Peek("email"))
+	offset, limit := 0, 0
 
-    if pOffset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil {
-        offset = pOffset
-    }
-    if pLimit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil {
-        limit = pLimit
-    }
+	if pOffset, err := strconv.Atoi(string(args.Peek("offset"))); err == nil {
+		offset = pOffset
+	}
+	if pLimit, err := strconv.Atoi(string(args.Peek("limit"))); err == nil {
+		limit = pLimit
+	}
 
-    users, err := models.GetUsers(env.Db, email, offset, limit)
+	users, err := models.GetUsers(env.Db, email, offset, limit)
 
-    if err != nil {
-        ctx.Response.Header.SetStatusCode(500)
-        fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-        env.Log.WithFields(logrus.Fields{"event": "Lists sessions", "status": "Failed"}).Error(err.Error())
-        return
-    }
+	if err != nil {
+		ctx.Response.Header.SetStatusCode(500)
+		fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+		env.Log.WithFields(logrus.Fields{"event": "Lists sessions", "status": "Failed"}).Error(err.Error())
+		return
+	}
 
-    ctx.SetContentType("application/json")
+	ctx.SetContentType("application/json")
 	json.NewEncoder(ctx).Encode(&users)
 }
 
 func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
-    currentUser := ctx.UserValue("currentUser").(models.User)
+	currentUser := ctx.UserValue("currentUser").(models.User)
 	var user models.User
 	args := ctx.QueryArgs()
-    id := ctx.UserValue("id").(string)
+	id := ctx.UserValue("id").(string)
 	ctx.SetContentType("application/json")
-    if currentUser.Id == id {
-        user = currentUser
-    } else if currentUser.IsAdmin {
-        user, err := models.GetUser(env.Db, id)
-        if err != nil && err.Error() != "record not found" {
-            ctx.Response.Header.SetStatusCode(500)
-            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
-            return
-        }
+	if currentUser.Id == id {
+		user = currentUser
+	} else if currentUser.IsAdmin {
+		var err error
+		user, err = models.GetUser(env.Db, id)
+		if err != nil && err.Error() != "record not found" {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+			return
+		}
 
-        if user.Id == "" {
-            ctx.Response.Header.SetStatusCode(404)
-            fmt.Fprint(ctx, `{"error": "User not found"}`)
-            return
-        }
-    } else {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+		if user.Id == "" {
+			ctx.Response.Header.SetStatusCode(404)
+			fmt.Fprint(ctx, `{"error": "User not found"}`)
+			return
+		}
+	} else {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
 	if string(args.Peek("includeSessions")) == "true" {
 		var sessions []models.Session
@@ -82,13 +83,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 			query = query.Limit(limit)
 		}
 
-        err := query.Model(&user).Related(&sessions).Error
-        if err != nil {
-            ctx.Response.Header.SetStatusCode(500)
-            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
-            return
-        }
+		err := query.Model(&user).Related(&sessions).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+			return
+		}
 
 		user.Sessions = sessions
 	}
@@ -104,13 +105,13 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 			query = query.Limit(limit)
 		}
 
-        err := query.Model(&user).Related(&links).Error
-        if err != nil {
-            ctx.Response.Header.SetStatusCode(500)
-            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
-            return
-        }
+		err := query.Model(&user).Related(&links).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "GetUser", "status": "Failed"}).Error(err.Error())
+			return
+		}
 
 		user.Links = links
 	}
@@ -119,29 +120,30 @@ func (env Env) GetUser(ctx *fasthttp.RequestCtx) {
 }
 
 type createUserRequest struct {
-    Username string `json:"username"`
-    Email    string `json:"email"`
-    Password string `json:"password"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	IsAdmin  bool   `json:"isAdmin"`
 }
 
 func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
-    if !ctx.UserValue("currentUser").(models.User).IsAdmin {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+	if !ctx.UserValue("currentUser").(models.User).IsAdmin {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
-    var data createUserRequest
+	var data createUserRequest
 	ctx.SetContentType("application/json")
 
 	json.Unmarshal(ctx.Request.Body(), &data)
 
-
 	user := models.User{
-        Username: data.Username,
-        Email:    data.Email,
-        Password: []byte(data.Password),
+		Username: data.Username,
+		Email:    data.Email,
+		Password: []byte(data.Password),
+		IsAdmin:  data.IsAdmin,
 	}
 
 	errs := user.ValidateUser()
@@ -150,9 +152,9 @@ func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
 		ctx.Response.Header.SetStatusCode(400)
 
 		fmt.Fprint(ctx, `{"error": [`)
-		for i,err := range errs {
+		for i, err := range errs {
 			fmt.Fprintf(ctx, `"%v"`, err.Error())
-			if i != len(errs) -1 {
+			if i != len(errs)-1 {
 				fmt.Fprint(ctx, ",")
 			}
 		}
@@ -161,7 +163,6 @@ func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
 	}
 
 	err := user.SaveToDatabase(env.Db)
-
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
@@ -181,24 +182,25 @@ func (env Env) CreateUser(ctx *fasthttp.RequestCtx) {
 }
 
 type editUserRequest struct {
-    Username         string `json:"username"`
-    Email            string `json:"email"`
-    Password         string `json:"password"`
-    OriginalPassword string `json:"originalPassword"`
-    Apikey           bool   `json:"apikey"`
+	Username         string `json:"username"`
+	Email            string `json:"email"`
+	Password         string `json:"password"`
+	OriginalPassword string `json:"originalPassword"`
+	Apikey           bool   `json:"apikey"`
+	IsAdmin          bool   `json:"isAdmin"`
 }
 
 func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
-    currentUser := ctx.UserValue("currentUser").(models.User)
-    var data editUserRequest
+	currentUser := ctx.UserValue("currentUser").(models.User)
+	var data editUserRequest
 	var user models.User
-	changes := make(map[string] interface{})
+	changes := make(map[string]interface{})
 	id := ctx.UserValue("id")
 	ctx.SetContentType("application/json")
 
 	json.Unmarshal(ctx.Request.Body(), &data)
 
-    if username := data.Username; username != "" {
+	if username := data.Username; username != "" {
 		if err := models.ValidateUsername(username); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
 			fmt.Fprintf(ctx, `{"error": "%v"}`, err)
@@ -206,7 +208,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 		}
 		changes["Username"] = username
 	}
-    if email := data.Email; email != "" {
+	if email := data.Email; email != "" {
 		if err := models.ValidateEmail(email); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
 			fmt.Fprintf(ctx, `{"error": "%v"}`, err)
@@ -214,7 +216,7 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 		}
 		changes["Email"] = email
 	}
-    if password := data.Password; password != "" {
+	if password := data.Password; password != "" {
 		passwordBytes := []byte(password)
 		if err := models.ValidatePassword(passwordBytes); err != nil {
 			ctx.Response.Header.SetStatusCode(400)
@@ -229,10 +231,9 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 			return
 		}
 
-
 		changes["Password"] = passwordBytes
 	}
-    if data.Apikey {
+	if data.Apikey {
 		apikey, err := models.GenerateUserApiKey()
 		if err != nil {
 			ctx.Response.Header.SetStatusCode(500)
@@ -243,56 +244,59 @@ func (env Env) EditUser(ctx *fasthttp.RequestCtx) {
 
 		changes["Apikey"] = apikey
 	}
-    if currentUser.Id == id {
-        user = currentUser
-        if changes["Password"] != nil && !user.CheckIfCorrectPassword([]byte(data.OriginalPassword)) {
-            ctx.Response.Header.SetStatusCode(400)
-            fmt.Fprint(ctx, `{"error": "Missing or invalid originalPassword"}`)
-            return
-        }
+	if data.IsAdmin && currentUser.IsAdmin {
+		changes["IsAdmin"] = data.IsAdmin
+	}
+	if currentUser.Id == id {
+		user = currentUser
+		if changes["Password"] != nil && !user.CheckIfCorrectPassword([]byte(data.OriginalPassword)) {
+			ctx.Response.Header.SetStatusCode(400)
+			fmt.Fprint(ctx, `{"error": "Missing or invalid originalPassword"}`)
+			return
+		}
 
-        err := env.Db.Model(&user).Updates(changes).Error
-        if err != nil {
-            ctx.Response.Header.SetStatusCode(500)
-            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "Edit user", "status": "Failed"}).Error(err.Error())
-            return
-        }
-    } else if currentUser.IsAdmin {
-        env.Db.Where("id = ?", id).Take(&user)
-        if user.Id == "" {
-            ctx.Response.Header.SetStatusCode(404)
-            fmt.Fprint(ctx, `{"error": "User not found"}`)
-            return
-        }
+		err := env.Db.Model(&user).Updates(changes).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "Edit user", "status": "Failed"}).Error(err.Error())
+			return
+		}
+	} else if currentUser.IsAdmin {
+		env.Db.Where("id = ?", id).Take(&user)
+		if user.Id == "" {
+			ctx.Response.Header.SetStatusCode(404)
+			fmt.Fprint(ctx, `{"error": "User not found"}`)
+			return
+		}
 
-        err := env.Db.Model(&user).Updates(changes).Error
-        if err != nil {
-            ctx.Response.Header.SetStatusCode(500)
-            fmt.Fprint(ctx, `{"error": "Internal server error"}`)
-            env.Log.WithFields(logrus.Fields{"event": "Edit user", "status": "Failed"}).Error(err.Error())
-            return
-        }
-    } else {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+		err := env.Db.Model(&user).Updates(changes).Error
+		if err != nil {
+			ctx.Response.Header.SetStatusCode(500)
+			fmt.Fprint(ctx, `{"error": "Internal server error"}`)
+			env.Log.WithFields(logrus.Fields{"event": "Edit user", "status": "Failed"}).Error(err.Error())
+			return
+		}
+	} else {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
 	json.NewEncoder(ctx).Encode(&user)
 }
 
 func (env Env) DeleteUser(ctx *fasthttp.RequestCtx) {
-    currentUser := ctx.UserValue("currentUser").(models.User)
+	currentUser := ctx.UserValue("currentUser").(models.User)
 	id := ctx.UserValue("id")
 
-    if currentUser.Id != id && !currentUser.IsAdmin {
-        ctx.Response.Header.SetStatusCode(401)
-        ctx.SetContentType("application/json")
-        fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
-        return
-    }
+	if currentUser.Id != id && !currentUser.IsAdmin {
+		ctx.Response.Header.SetStatusCode(401)
+		ctx.SetContentType("application/json")
+		fmt.Fprint(ctx, `{"error": "UNAUTHORIZED"}`)
+		return
+	}
 
 	result := env.Db.Delete(models.User{}, "id = ?", id)
 	if err := result.Error; err != nil {

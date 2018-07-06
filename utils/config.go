@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"github.com/go-ini/ini"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/go-ini/ini"
 	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -18,6 +18,8 @@ type ServerConfig struct {
 	AllowRegister      bool
 	LogLevel           string
 	LogDatabaseQueries bool
+	EnableCORS         bool
+	CORSString         string
 }
 
 type DatabaseConfig struct {
@@ -62,7 +64,7 @@ func (config DatabaseConfig) GetConnectionString() string {
 	)
 }
 
-func ParseConfigFile(filePath string) (*Config, error){
+func ParseConfigFile(filePath string) (*Config, error) {
 	config := new(Config)
 	err := ini.MapTo(config, filePath)
 	return config, err
