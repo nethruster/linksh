@@ -4,16 +4,17 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-//A wrapper for gorm, which include some usfeful methods
+//DB is a wrapper for gorm, which include some usfeful methods
 type DB struct {
-    *gorm.DB
+	*gorm.DB
 }
 
+//OpenDatabase returns a new DB instance connected to the specified data source
 func OpenDatabase(dataSourceName string) (*DB, error) {
-    db, err := gorm.Open(dataSourceName)
-    if err != nil {
-        return nil, err
-    }
+	db, err := gorm.Open(dataSourceName)
+	if err != nil {
+		return nil, err
+	}
 
-    return &DB{db}, nil
+	return &DB{db}, nil
 }
