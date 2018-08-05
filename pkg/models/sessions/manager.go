@@ -3,8 +3,6 @@ package sessions
 import (
 	"errors"
 	"time"
-
-	"github.com/valyala/fasthttp"
 )
 
 //SessionManager is helps to manage the session stored in the provider
@@ -89,39 +87,4 @@ func (manager *SessionManager) CheckValidSession(sessionID, ownerID string) (boo
 	return session.OwnerID == ownerID, session, nil
 }
 
-//GetFasthttpSessionMiddleware returns a middleware for fasyhttp
-//if strict is set to true the middleware will cancel the connection if a valid session is not provided
-func (manager *SessionManager) GetFasthttpSessionMiddleware(strict bool, handler fasthttp.RequestHandler) fasthttp.RequestHandler {
-	if strict {
-		return func(ctx *fasthttp.RequestCtx) {
-			if cookie := ctx.Request.Header.Cookie("linksh-auth"); cookie != nil {
-				data := string(cookie)
-				ok, session, err := manager.CheckValidSession(data[:36], data[36:])
 
-				if err != nil {
-					ctx.Error("Internal server error", 500)
-					return
-				}
-
-				if ok {
-                    ctx.SetUserValue("session", session)
-                    handler(ctx)
-				} else {
-					ctx.Error("Invalid session", 400)
-				}
-			}
-		}
-	}
-
-	return func(ctx *fasthttp.RequestCtx) {
-		if cookie := ctx.Request.Header.Cookie("linksh-auth"); cookie != nil {
-			data := string(cookie)
-			ok, session, _ := manager.CheckValidSession(data[:36], data[36:])
-
-			if ok {
-				ctx.SetUserValue("session", session)
-            }
-            handler(ctx)
-		}
-	}
-}
