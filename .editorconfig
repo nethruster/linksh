@@ -1,0 +1,30 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# gofmt defaults
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Makefiles require tab indentation
+[{M,m,GNUM,GNUm}akefile{,.*}]
+indent_style = tab
+
+[*.{mak,mk}]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+
+# Windows specific settings:
+
+# Batch files require CRLF newlines
+[*.{bat,cmd,BAT,CMD}]
+end_of_line = crlf
