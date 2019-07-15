@@ -8,10 +8,10 @@ import (
 //The implementations of this interface will not be attached to an specific storage
 type IUserRepository interface {
 	//CheckLoginCredentials checks if the provided credentials are valid to perform a login
-	CheckLoginCredentials(username, password string) (bool, error)
+	CheckLoginCredentials(name string, password []byte) (bool, error)
 	//Create creates an user and save it to the storage
 	//This methods will permorn validations over the provided data
-	Create(username, password string) (models.User, error)
+	Create(name string, password []byte) (models.User, error)
 	//Get returns an user from the storage
 	Get(id string) (models.User, error)
 	//List lits the users
