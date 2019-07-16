@@ -65,7 +65,7 @@ func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (us
 
 //Get returns an user from the storage
 func (ur *UserRepository) Get(id string) (models.User, error) {
-	panic(errors.New("*UserRepository.Get not implemented"))
+	return ur.Storage.GetUser(id)
 }
 
 //List lits the users
