@@ -1,4 +1,4 @@
-package interfaces
+package userrepository
 
 import (
 	"github.com/nethruster/linksh/pkg/models"
