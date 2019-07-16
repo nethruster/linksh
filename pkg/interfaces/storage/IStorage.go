@@ -1,6 +1,9 @@
 package istorage
 
-import "github.com/nethruster/linksh/pkg/models"
+import (
+	"github.com/nethruster/linksh/pkg/interfaces/userrepository"
+	"github.com/nethruster/linksh/pkg/models"
+)
 
 //IStorage represents the storage functionality.
 //No method of this interface will perform data validations as it's a job of the repositories, although it will check for uniqueness in the storage
@@ -21,7 +24,7 @@ type IStorage interface {
 	//UpdateUser replaces the values of the user in the storage with the non empty ones of the provided user
 	//If the user does not exists in the storage an NotFoundError would be returned
 	//If there is a conflicting unique field this method will return an AlreadyExistsError
-	UpdateUser(user models.User) error
+	UpdateUser(user userrepository.UpdatePayload) error
 	//DeleteUser deletes the user specified user from the storage
 	//If the user does not exists in the storage an NotFoundError would be returned
 	DeleteUser(id string) error

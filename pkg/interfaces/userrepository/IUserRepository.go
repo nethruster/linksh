@@ -26,3 +26,11 @@ type IUserRepository interface {
 	//Delete deletes an user from the storage
 	Delete(id string) error
 }
+
+//UpdatePayload is a clone of models.User with nullable fields used to perform operations as only the not null fields will be the ones updated
+type UpdatePayload struct {
+	ID       string  `json:"id,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	Password []byte  `json:"password,omitempty"`
+	IsAdmin  *bool   `json:"isAdmin"`
+}
