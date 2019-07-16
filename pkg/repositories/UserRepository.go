@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	gonanoid "github.com/matoous/go-nanoid"
 	sto "github.com/nethruster/linksh/pkg/interfaces/storage"
+	"github.com/nethruster/linksh/pkg/interfaces/userrepository"
 	"github.com/nethruster/linksh/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 	errors "golang.org/x/xerrors"
@@ -30,8 +32,35 @@ func (ur *UserRepository) CheckLoginCredentials(name string, password []byte) (b
 
 //Create creates an user and save it to the storage
 //This methods will permorn validations over the provided data
-func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (models.User, error) {
-	panic(errors.New("*UserRepository.Create not implemented"))
+func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (user models.User, err error) {
+	//Check if the user's name is valid
+	if length := len(name); length == 0 || length > 100 {
+		err = userrepository.ErrInvalidName
+		return
+	}
+	//Check if the user's password is valid
+	if len(password) < 6 {
+		err = userrepository.ErrInvalidPassword
+		return
+	}
+
+	pwHash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		return
+	}
+	id, err := generateUserID()
+	if err != nil {
+		return
+	}
+	user = models.User{
+		ID:       id,
+		Name:     name,
+		Password: pwHash,
+		IsAdmin:  isAdmin,
+	}
+
+	err = ur.Storage.SaveUser(user)
+	return
 }
 
 //Get returns an user from the storage
@@ -55,4 +84,8 @@ func (ur *UserRepository) Update(u1 models.User) error {
 //Delete deletes an user from the storage
 func (ur *UserRepository) Delete(id string) error {
 	panic(errors.New("*UserRepository.Delete not implemented"))
+}
+
+func generateUserID() (string, error) {
+	return gonanoid.Nanoid()
 }
