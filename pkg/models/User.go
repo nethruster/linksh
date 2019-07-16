@@ -5,4 +5,5 @@ type User struct {
 	ID       string `json:"id"`   //must be unique
 	Name     string `json:"name"` //must be unique and no longer that 100 characters
 	Password []byte `json:"-"`
+	IsAdmin  bool   `json:"isAdmin"`
 }

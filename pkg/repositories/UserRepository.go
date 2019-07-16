@@ -30,7 +30,7 @@ func (ur *UserRepository) CheckLoginCredentials(name string, password []byte) (b
 
 //Create creates an user and save it to the storage
 //This methods will permorn validations over the provided data
-func (ur *UserRepository) Create(name string, password []byte) (models.User, error) {
+func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (models.User, error) {
 	panic(errors.New("*UserRepository.Create not implemented"))
 }
 

@@ -12,7 +12,7 @@ type IUserRepository interface {
 	//Create creates an user and save it to the storage
 	//This methods will permorn validations over the provided data
 	//The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
-	Create(name string, password []byte) (models.User, error)
+	Create(name string, password []byte, isAdmin bool) (models.User, error)
 	//Get returns an user from the storage
 	Get(id string) (models.User, error)
 	//List lits the users
