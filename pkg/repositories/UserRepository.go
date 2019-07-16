@@ -71,7 +71,7 @@ func (ur *UserRepository) Get(id string) (models.User, error) {
 //List lits the users
 //If limit is set to 0, no limit will be established
 func (ur *UserRepository) List(limit, offset uint) ([]models.User, error) {
-	panic(errors.New("*UserRepository.List not implemented"))
+	return ur.Storage.ListUsers(limit, offset)
 }
 
 //Update replaces the values of the user in the storage with the values of the user provided by parameter
