@@ -11,6 +11,7 @@ type IUserRepository interface {
 	CheckLoginCredentials(name string, password []byte) (bool, error)
 	//Create creates an user and save it to the storage
 	//This methods will permorn validations over the provided data
+	//The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
 	Create(name string, password []byte) (models.User, error)
 	//Get returns an user from the storage
 	Get(id string) (models.User, error)
@@ -20,6 +21,7 @@ type IUserRepository interface {
 	//Update replaces the values of the user in the storage with the values of the user provided by parameter
 	//If the user doesn't exists in the storage an error will be returned
 	//This methods will permorn validations over the provided data
+	//The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
 	Update(user models.User) error
 	//Delete deletes an user from the storage
 	Delete(id string) error
