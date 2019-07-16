@@ -33,14 +33,12 @@ func (ur *UserRepository) CheckLoginCredentials(name string, password []byte) (b
 //Create creates an user and save it to the storage
 //This methods will permorn validations over the provided data
 func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (user models.User, err error) {
-	//Check if the user's name is valid
-	if length := len(name); length == 0 || length > 100 {
-		err = userrepository.ErrInvalidName
+	err = validateName(name)
+	if err != nil {
 		return
 	}
-	//Check if the user's password is valid
-	if len(password) < 6 {
-		err = userrepository.ErrInvalidPassword
+	err = validatePassword(password)
+	if err != nil {
 		return
 	}
 
@@ -77,15 +75,42 @@ func (ur *UserRepository) List(limit, offset uint) ([]models.User, error) {
 //Update replaces the values of the user in the storage with the values of the user provided by parameter
 //If the user doesn't exists in the storage an error will be returned
 //This methods will permorn validations over the provided data
-func (ur *UserRepository) Update(u1 models.User) error {
-	panic(errors.New("*UserRepository.Update not implemented"))
+func (ur *UserRepository) Update(payload userrepository.UpdatePayload) (err error) {
+	if payload.Name != nil {
+		err = validateName(*payload.Name)
+		if err != nil {
+			return
+		}
+	}
+	if payload.Password != nil {
+		err = validatePassword(payload.Password)
+		if err != nil {
+			return
+		}
+	}
+
+	return ur.Storage.UpdateUser(payload)
 }
 
 //Delete deletes an user from the storage
 func (ur *UserRepository) Delete(id string) error {
-	panic(errors.New("*UserRepository.Delete not implemented"))
+	return ur.Storage.DeleteUser(id)
 }
 
 func generateUserID() (string, error) {
 	return gonanoid.Nanoid()
+}
+
+func validateName(name string) error {
+	if length := len(name); length == 0 || length > 100 {
+		return userrepository.ErrInvalidName
+	}
+	return nil
+}
+
+func validatePassword(password []byte) error {
+	if len(password) < 6 {
+		return userrepository.ErrInvalidPassword
+	}
+	return nil
 }
