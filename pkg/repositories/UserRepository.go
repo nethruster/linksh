@@ -102,16 +102,14 @@ func (ur *UserRepository) Delete(id string) error {
 //The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
 //The requester must be an admin to perform this action
 func (ur *UserRepository) CreateByUser(requesterID string, name string, password []byte, isAdmin bool) (user models.User, err error) {
-	requester, err := ur.Storage.GetUser(requesterID)
+	reqIsAdmin, err := ur.checkIfRequesterIsAdmin(requesterID)
 	if err != nil {
-		err = errors.Errorf("Error checking requester %w", err)
 		return
 	}
-	if !requester.IsAdmin {
+	if !reqIsAdmin {
 		err = userrepository.ErrForbidden
 		return
 	}
-
 	return ur.Create(name, password, isAdmin)
 }
 
@@ -141,6 +139,16 @@ func (ur *UserRepository) UpdateByUser(requesterID string, user userrepository.U
 //The requester must only delete himself or be an admin to perform this action
 func (ur *UserRepository) DeleteByUser(id string) error {
 	panic(errors.New("Not implemented"))
+}
+
+func (ur *UserRepository) checkIfRequesterIsAdmin(requesterID string) (ok bool, err error) {
+	requester, err := ur.Storage.GetUser(requesterID)
+	if err != nil {
+		err = errors.Errorf("Error checking the requester %w", err)
+		return
+	}
+
+	return requester.IsAdmin, nil
 }
 
 func generateUserID() (string, error) {
