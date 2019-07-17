@@ -43,7 +43,7 @@ type IUserRepository interface {
 	//If the user doesn't exists in the storage an error would be returned
 	//This methods will permorn validations over the provided data
 	//The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
-	//The requester must only modify information about himself or be an admin to perform this action
+	//The requestor can only modify information about himself or otherwise be an admin to perform this action. The isAdmin property can only be changed by other admins.
 	UpdateByUser(requesterID string, user UpdatePayload) error
 	//DeleteByUser deletes an user from the storage
 	//The requester must only delete himself or be an admin to perform this action
