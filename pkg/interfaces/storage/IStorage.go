@@ -38,7 +38,8 @@ type IStorage interface {
 	//If the link does not exists in the storage an NotFoundError would be returned
 	GetLink(id string) (models.Link, error)
 	//ListLinks list the links in the storage with a limit and an offset
-	ListLinks(limit, offset uint) ([]models.Link, error)
+	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
+	ListLinks(ownerID string, limit, offset uint) ([]models.Link, error)
 	//UpdateUser replaces the values of the user in the storage with the non empty ones of the provided user
 	//If the link does not exists in the storage an NotFoundError would be returned
 	//If there is a conflicting unique field this method will return an AlreadyExistsError
@@ -46,4 +47,7 @@ type IStorage interface {
 	//DeleteLink deletes the link specified user from the storage
 	//If the link does not exists in the storage an NotFoundError would be returned
 	DeleteLink(id string) error
+	//IncreaseLinkHitCount increases the hits number of a link in the storage
+	//If the user does not exists in the storage an NotFoundError would be returned
+	IncreaseLinkHitCount(id string) error
 }
