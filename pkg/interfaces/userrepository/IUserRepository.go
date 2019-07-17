@@ -17,7 +17,7 @@ type IUserRepository interface {
 	//Get returns an user from the storage
 	Get(id string) (models.User, error)
 	//List lits the users
-	//If limit is set to 0, no limit will be established
+	//If limit is set to 0, no limit will be established, the same happens to the offset
 	List(limit, offset uint) ([]models.User, error)
 	//Update replaces the values of the user in the storage with the values of the user provided by parameter
 	//If the user doesn't exists in the storage an error would be returned
