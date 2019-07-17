@@ -115,8 +115,20 @@ func (ur *UserRepository) CreateByUser(requesterID string, name string, password
 
 //GetByUser returns an user from the storage
 //The requester must only request information about himself or be an admin to perform this action
-func (ur *UserRepository) GetByUser(requesterID, id string) (models.User, error) {
-	panic(errors.New("Not implemented"))
+func (ur *UserRepository) GetByUser(requesterID, id string) (user models.User, err error) {
+	if requesterID != id {
+		var reqIsAdmin bool
+		reqIsAdmin, err = ur.checkIfRequesterIsAdmin(requesterID)
+		if err != nil {
+			return
+		}
+		if !reqIsAdmin {
+			err = userrepository.ErrForbidden
+			return
+		}
+	}
+
+	return ur.Get(id)
 }
 
 //ListByUser lits the users
