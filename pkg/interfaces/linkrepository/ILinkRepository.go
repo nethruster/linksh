@@ -29,7 +29,7 @@ type ILinkRepository interface {
 	//If the user does not exists in the storage an NotFoundError would be returned
 	//The requester must own the link or be an admin to perform this action
 	GetLinkByUser(requesterID, id string) models.Link
-	//List lits the users
+	//ListByUser lits the users
 	//If limit is set to 0, no limit will be established, the same happens to the offset
 	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
 	//The requester must be the owner of the links or an admin to perform this action
