@@ -126,8 +126,13 @@ func (ur *UserRepository) GetByUser(requesterID, id string) (user models.User, e
 //ListByUser lits the users
 //If limit is set to 0, no limit will be established
 //The requester must be an admin to perform this action
-func (ur *UserRepository) ListByUser(requesterID string, limit, offset uint) ([]models.User, error) {
-	panic(errors.New("Not implemented"))
+func (ur *UserRepository) ListByUser(requesterID string, limit, offset uint) (users []models.User, err error) {
+	err = ur.checkIfRequesterIsAdmin(requesterID)
+	if err != nil {
+		return
+	}
+
+	return ur.List(limit, offset)
 }
 
 //UpdateByUser replaces the values of the user in the storage with the values of the user provided by parameter
@@ -135,14 +140,28 @@ func (ur *UserRepository) ListByUser(requesterID string, limit, offset uint) ([]
 //This methods will permorn validations over the provided data
 //The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
 //The requester must only modify information about himself or be an admin to perform this action
-func (ur *UserRepository) UpdateByUser(requesterID string, user userrepository.UpdatePayload) error {
-	panic(errors.New("Not implemented"))
+func (ur *UserRepository) UpdateByUser(requesterID string, user userrepository.UpdatePayload) (err error) {
+	if requesterID != user.ID {
+		err = ur.checkIfRequesterIsAdmin(requesterID)
+		if err != nil {
+			return
+		}
+	}
+
+	return ur.Update(user)
 }
 
 //DeleteByUser deletes an user from the storage
 //The requester must only delete himself or be an admin to perform this action
-func (ur *UserRepository) DeleteByUser(id string) error {
-	panic(errors.New("Not implemented"))
+func (ur *UserRepository) DeleteByUser(requesterID, id string) (err error) {
+	if requesterID != id {
+		err = ur.checkIfRequesterIsAdmin(requesterID)
+		if err != nil {
+			return
+		}
+	}
+
+	return ur.Delete(id)
 }
 
 func (ur *UserRepository) checkIfRequesterIsAdmin(requesterID string) (err error) {
