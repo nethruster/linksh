@@ -101,8 +101,18 @@ func (ur *UserRepository) Delete(id string) error {
 //This methods will permorn validations over the provided data
 //The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
 //The requester must be an admin to perform this action
-func (ur *UserRepository) CreateByUser(requesterID string, name string, password []byte, isAdmin bool) (models.User, error) {
-	panic(errors.New("Not implemented"))
+func (ur *UserRepository) CreateByUser(requesterID string, name string, password []byte, isAdmin bool) (user models.User, err error) {
+	requester, err := ur.Storage.GetUser(requesterID)
+	if err != nil {
+		err = errors.Errorf("Error checking requester %w", err)
+		return
+	}
+	if !requester.IsAdmin {
+		err = userrepository.ErrForbidden
+		return
+	}
+
+	return ur.Create(name, password, isAdmin)
 }
 
 //GetByUser returns an user from the storage
