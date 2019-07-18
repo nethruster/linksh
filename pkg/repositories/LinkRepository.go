@@ -3,6 +3,8 @@ package repositories
 import (
 	"errors"
 
+	gonanoid "github.com/matoous/go-nanoid"
+	"github.com/nethruster/linksh/pkg/interfaces/linkrepository"
 	sto "github.com/nethruster/linksh/pkg/interfaces/storage"
 	"github.com/nethruster/linksh/pkg/models"
 )
@@ -16,8 +18,28 @@ type LinkRepository struct {
 //This methods will permorn validations over the provided data
 //If the id is left blank, a random one would be assigned
 //The data validations in this method can produce an ErrInvalidID or an ErrInvalidContent
-func (lr *LinkRepository) Create(id, content, ownerID string) (models.Link, error) {
-	panic(errors.New("Not implemented"))
+func (lr *LinkRepository) Create(id, content, ownerID string) (link models.Link, err error) {
+	mustGenerateID := id == ""
+	if mustGenerateID {
+		id, err = generateLinkID()
+	} else {
+		err = validateID(id)
+	}
+	if err != nil {
+		return
+	}
+	err = validateContent(content)
+	if err != nil {
+		return
+	}
+	link = models.Link{
+		ID:      id,
+		Content: content,
+		OwnerID: ownerID,
+	}
+
+	err = lr.Storage.SaveLink(link)
+	return
 }
 
 //GetLink returns the link with specified ID from the storage
@@ -65,4 +87,22 @@ func (lr *LinkRepository) ListByUser(requesterID, ownerID string, limit, offset 
 //If the user does not exists in the storage an NotFoundError would be returned
 func (lr *LinkRepository) IncreaseHitCount(id string) error {
 	panic(errors.New("Not implemented"))
+}
+
+func validateID(id string) error {
+	if length := len(id); length == 0 || length > 100 {
+		return linkrepository.ErrInvalidID
+	}
+	return nil
+}
+
+func validateContent(content string) error {
+	if length := len(content); length == 0 || length > 2000 {
+		return linkrepository.ErrInvalidContent
+	}
+	return nil
+}
+
+func generateLinkID() (string, error) {
+	return gonanoid.Nanoid(7)
 }
