@@ -4,7 +4,7 @@ import "github.com/nethruster/linksh/pkg/models"
 
 //ILinkRepository represents all the possible actions performed over the links
 //The implementations of this interface will not be attached to an specific storage
-//The methods with the suffix 'ByUser' will only be perform if the requester has enough privileges, if not an ErrForbidden would be returned
+//The methods with the suffix 'ByUser' will only be perform if the requester has enough privileges, if not an github.com/nethruster/linksh/pkg/interfaces/userrepository.ErrForbidden would be returned
 type ILinkRepository interface {
 	//Create creates a link and save it to the storage
 	//This methods will permorn validations over the provided data
@@ -33,10 +33,10 @@ type ILinkRepository interface {
 	//If the link does not exists in the storage an NotFoundError would be returned
 	IncreaseHitCount(id string) error
 
-	//GetLinkByUser returns the link with specified ID from the storage
+	//GetByUser returns the link with specified ID from the storage
 	//If the link does not exists in the storage an NotFoundError would be returned
 	//The requester must own the link or be an admin to perform this action
-	GetLinkByUser(requesterID, id string) models.Link
+	GetByUser(requesterID, id string) (models.Link, error)
 	//ListByUser lits the users
 	//If limit is set to 0, no limit will be established, the same happens to the offset
 	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
