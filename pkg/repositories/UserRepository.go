@@ -68,7 +68,7 @@ func (ur *UserRepository) Get(id string) (models.User, error) {
 }
 
 //List lits the users
-//If limit is set to 0, no limit will be established
+//If the limit is set to 0, no limit will be established, the same applies to the offset
 func (ur *UserRepository) List(limit, offset uint) ([]models.User, error) {
 	return ur.Storage.ListUsers(limit, offset)
 }

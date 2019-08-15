@@ -18,7 +18,7 @@ type IUserRepository interface {
 	//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 	Get(id string) (models.User, error)
 	//List lits the users
-	//If limit is set to 0, no limit will be established, the same happens to the offset
+	//If the limit is set to 0, no limit will be established, the same applies to the offset
 	List(limit, offset uint) ([]models.User, error)
 	//Update replaces the values of the user in the storage with the values of the user provided by parameter
 	//This methods will permorn validations over the provided data
