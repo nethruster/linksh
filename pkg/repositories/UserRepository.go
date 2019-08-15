@@ -62,6 +62,7 @@ func (ur *UserRepository) Create(name string, password []byte, isAdmin bool) (us
 }
 
 //Get returns an user from the storage
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 func (ur *UserRepository) Get(id string) (models.User, error) {
 	return ur.Storage.GetUser(id)
 }
@@ -73,7 +74,7 @@ func (ur *UserRepository) List(limit, offset uint) ([]models.User, error) {
 }
 
 //Update replaces the values of the user in the storage with the values of the user provided by parameter
-//If the user doesn't exists in the storage an error will be returned
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 //This methods will permorn validations over the provided data
 func (ur *UserRepository) Update(payload userrepository.UpdatePayload) (err error) {
 	if payload.Name != nil {
@@ -93,6 +94,7 @@ func (ur *UserRepository) Update(payload userrepository.UpdatePayload) (err erro
 }
 
 //Delete deletes an user from the storage
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 func (ur *UserRepository) Delete(id string) error {
 	return ur.Storage.DeleteUser(id)
 }
@@ -111,6 +113,7 @@ func (ur *UserRepository) CreateByUser(requesterID string, name string, password
 }
 
 //GetByUser returns an user from the storage
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 //The requester must only request information about himself or be an admin to perform this action
 func (ur *UserRepository) GetByUser(requesterID, id string) (user models.User, err error) {
 	if requesterID != id {
@@ -136,9 +139,9 @@ func (ur *UserRepository) ListByUser(requesterID string, limit, offset uint) (us
 }
 
 //UpdateByUser replaces the values of the user in the storage with the values of the user provided by parameter
-//If the user doesn't exists in the storage an error would be returned
 //This methods will permorn validations over the provided data
 //The data validations in this method can produce an ErrInvalidName or an ErrInvalidPassword
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 //The requestor can only modify information about himself or otherwise be an admin to perform this action. The isAdmin property can only be changed by other admins.
 func (ur *UserRepository) UpdateByUser(requesterID string, user userrepository.UpdatePayload) (err error) {
 	if requesterID != user.ID {
@@ -152,6 +155,7 @@ func (ur *UserRepository) UpdateByUser(requesterID string, user userrepository.U
 }
 
 //DeleteByUser deletes an user from the storage
+//If the user does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 //The requester must only delete himself or be an admin to perform this action
 func (ur *UserRepository) DeleteByUser(requesterID, id string) (err error) {
 	if requesterID != id {
