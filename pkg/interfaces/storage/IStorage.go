@@ -38,7 +38,7 @@ type IStorage interface {
 	//If the link does not exists in the storage an NotFoundError would be returned
 	GetLink(id string) (models.Link, error)
 	//ListLinks list the links in the storage with a limit and an offset
-	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
+	//if the ownerID is not empty the search would be limited to the ones owned by the specified user
 	ListLinks(ownerID string, limit, offset uint) ([]models.Link, error)
 	//UpdateUser replaces the values of the user in the storage with the non empty ones of the provided user
 	//If the link does not exists in the storage an NotFoundError would be returned

@@ -19,7 +19,7 @@ type ILinkRepository interface {
 	GetContentAndIncreaseHitCount(id string) (string, error)
 	//List lits the users
 	//If limit is set to 0, no limit will be established, the same happens to the offset
-	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
+	//if the ownerID is not empty the search would be limited to the ones owned by the specified user
 	List(ownerID string, limit, offset uint) ([]models.Link, error)
 	//UpdateContent replaces  the content of an existing link
 	//If the link doesn't exists in the Link an error would be returned
@@ -39,7 +39,7 @@ type ILinkRepository interface {
 	GetByUser(requesterID, id string) (models.Link, error)
 	//ListByUser lits the users
 	//If limit is set to 0, no limit will be established, the same happens to the offset
-	//if the ownerID is not empty the search would be limited to the owned owned by the specified user
+	//if the ownerID is not empty the search would be limited to the ones owned by the specified user
 	//The requester must be the owner of the links or an admin to perform this action
 	ListByUser(requesterID, ownerID string, limit, offset uint) ([]models.Link, error)
 	//UpdateContentByUser replaces  the content of an existing link
