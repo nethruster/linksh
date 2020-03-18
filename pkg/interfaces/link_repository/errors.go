@@ -1,4 +1,4 @@
-package linkrepository
+package link_repository
 
 import "errors"
 

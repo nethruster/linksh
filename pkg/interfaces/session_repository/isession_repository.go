@@ -1,4 +1,4 @@
-package sessionrepository
+package session_repository
 
 import (
 	"github.com/nethruster/linksh/pkg/models"
@@ -28,6 +28,6 @@ type ISessionRepository interface {
 	//If the session does not exists in the storage an error pkg/interfaces/storage.NotFoundError would be returned
 	Delete(id string) error
 	//Delete deletes a session
-	//The requester must own the session to perform this action, otherwise an pkg/interfaces/userrepository.ErrForbidden would be returned
+	//The requester must own the session to perform this action, otherwise an pkg/interfaces/user_repository.ErrForbidden would be returned
 	DeleteByUser(userID, id string) error
 }

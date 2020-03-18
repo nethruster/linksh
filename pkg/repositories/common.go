@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	errors "golang.org/x/xerrors"
 	sto "github.com/nethruster/linksh/pkg/interfaces/storage"
-	"github.com/nethruster/linksh/pkg/interfaces/userrepository"
+	"github.com/nethruster/linksh/pkg/interfaces/user_repository"
+	errors "golang.org/x/xerrors"
 )
 
 func checkIfRequesterIsAdmin(storage sto.IStorage, requesterID string) (err error) {
@@ -14,7 +14,7 @@ func checkIfRequesterIsAdmin(storage sto.IStorage, requesterID string) (err erro
 	}
 
 	if !requester.IsAdmin {
-		err = userrepository.ErrForbidden
+		err = user_repository.ErrForbidden
 	}
 	return
 }

@@ -1,10 +1,10 @@
-package linkrepository
+package link_repository
 
 import "github.com/nethruster/linksh/pkg/models"
 
 //ILinkRepository represents all the possible actions performed over the links
 //The implementations of this interface will not be attached to an specific storage
-//The methods with the suffix 'ByUser' will only be perform if the requester has enough privileges, if not an pkg/interfaces/userrepository.ErrForbidden would be returned
+//The methods with the suffix 'ByUser' will only be perform if the requester has enough privileges, if not an pkg/interfaces/user_repository.ErrForbidden would be returned
 type ILinkRepository interface {
 	//Create creates a link and save it to the storage
 	//This methods will permorn validations over the provided data

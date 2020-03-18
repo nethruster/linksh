@@ -2,7 +2,7 @@ package repositories
 
 import (
 	gonanoid "github.com/matoous/go-nanoid"
-	"github.com/nethruster/linksh/pkg/interfaces/linkrepository"
+	"github.com/nethruster/linksh/pkg/interfaces/link_repository"
 	sto "github.com/nethruster/linksh/pkg/interfaces/storage"
 	"github.com/nethruster/linksh/pkg/models"
 )
@@ -44,11 +44,12 @@ func (lr *LinkRepository) Create(id, content, ownerID string) (link models.Link,
 //If the link does not exists in the storage an NotFoundError would be returned
 func (lr *LinkRepository) Get(id string) (models.Link, error) {
 	if id == "" {
-		return models.Link{}, linkrepository.ErrInvalidID
+		return models.Link{}, link_repository.ErrInvalidID
 	}
 
 	return lr.Storage.GetLink(id)
 }
+
 //GetContentAndIncreaseHitCount return the link content and increases the hits number of a link in the storage
 //If the link does not exists in the storage an NotFoundError would be returned
 func (lr *LinkRepository) GetContentAndIncreaseHitCount(id string) (string, error) {
@@ -62,12 +63,14 @@ func (lr *LinkRepository) GetContentAndIncreaseHitCount(id string) (string, erro
 
 	return link.Content, nil
 }
+
 //List lits the users
 //If the limit is set to 0, no limit will be established, the same applies to the offset
 //if the ownerID is not empty the search would be limited to the owned by the specified user
 func (lr *LinkRepository) List(ownerID string, limit, offset uint) ([]models.Link, error) {
 	return lr.Storage.ListLinks(ownerID, limit, offset)
 }
+
 //UpdateContent replaces  the content of an existing link
 //If the link doesn't exists in the Link an error would be returned
 //This methods will permorn validations over the provided data
@@ -84,11 +87,13 @@ func (lr *LinkRepository) UpdateContent(id, content string) error {
 
 	return nil
 }
+
 //Delete deletes a link from the storage
 //If the link does not exists in the storage an NotFoundError would be returned
 func (lr *LinkRepository) Delete(id string) error {
 	return lr.Storage.DeleteLink(id)
 }
+
 //IncreaseHitCount increases the hits number of a link in the storage
 //If the link does not exists in the storage an NotFoundError would be returned
 func (lr *LinkRepository) IncreaseHitCount(id string) error {
@@ -98,7 +103,7 @@ func (lr *LinkRepository) IncreaseHitCount(id string) error {
 //GetByUser returns the link with specified ID from the storage
 //If the link does not exists in the storage an NotFoundError would be returned
 //The requester must own the link or be an admin to perform this action
-func (lr *LinkRepository) GetByUser(requesterID, id string)  (models.Link, error) {
+func (lr *LinkRepository) GetByUser(requesterID, id string) (models.Link, error) {
 	link, err := lr.Get(id)
 	if err != nil {
 		return link, err
@@ -111,6 +116,7 @@ func (lr *LinkRepository) GetByUser(requesterID, id string)  (models.Link, error
 
 	return link, nil
 }
+
 //ListByUser lits the users
 //If the limit is set to 0, no limit will be established, the same applies to the offset
 //if the ownerID is not empty the search would be limited to the owned owned by the specified user
@@ -125,6 +131,7 @@ func (lr *LinkRepository) ListByUser(requesterID, ownerID string, limit, offset 
 
 	return lr.List(ownerID, limit, offset)
 }
+
 //UpdateContentByUser replaces  the content of an existing link
 //If the link doesn't exists in the Link an error would be returned
 //This methods will permorn validations over the provided data
@@ -163,14 +170,14 @@ func (lr *LinkRepository) DeleteByUser(requesterID, id string) error {
 
 func validateID(id string) error {
 	if length := len(id); length == 0 || length > 100 {
-		return linkrepository.ErrInvalidID
+		return link_repository.ErrInvalidID
 	}
 	return nil
 }
 
 func validateContent(content string) error {
 	if length := len(content); length == 0 || length > 2000 {
-		return linkrepository.ErrInvalidContent
+		return link_repository.ErrInvalidContent
 	}
 	return nil
 }

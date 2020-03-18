@@ -1,4 +1,4 @@
-package userrepository
+package user_repository
 
 import (
 	"github.com/nethruster/linksh/pkg/models"
