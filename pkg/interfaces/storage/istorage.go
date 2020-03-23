@@ -23,7 +23,7 @@ type IStorage interface {
 	//If the limit is set to 0, no limit will be established, the same applies to the offset
 	ListUsers(limit, offset uint) ([]models.User, error)
 	//UpdateUser replaces the values of the user in the storage with the non empty ones of the provided user
-	//If the user does not exists in the storage an NotFoundError would be returned
+	//If the user does not exists in the storage a NotFoundError would be returned
 	//If there is a conflicting unique field this method will return an AlreadyExistsError
 	UpdateUser(user user_repository.UpdatePayload) error
 	//DeleteUser deletes the user specified user from the storage
