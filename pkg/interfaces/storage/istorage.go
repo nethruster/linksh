@@ -8,7 +8,7 @@ import (
 //IStorage represents the storage functionality.
 //No method of this interface will perform data validations as it's a job of the repositories, although it will check for uniqueness in the storage
 type IStorage interface {
-	//User related methos
+	//User related methods
 
 	//SaveUser save the user in the storage
 	//If there is a conflicting unique field this method will return an AlreadyExistsError
