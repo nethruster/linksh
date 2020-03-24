@@ -1,7 +1,41 @@
 package mongo
 
+import (
+	"context"
+	"github.com/nethruster/linksh/pkg/interfaces/user_repository"
+	"github.com/nethruster/linksh/pkg/models"
+	"go.mongodb.org/mongo-driver/mongo"
+	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
+	"time"
+)
+
 type MongoStorage struct {
+	client *mongo.Client
+	DefaultTimeout time.Duration
 }
+
+func (sto *MongoStorage) Connect(connectionString string) error {
+	options := mongoOptions.Client().ApplyURI(connectionString)
+	*options.AppName = "linksh"
+	client, err := mongo.NewClient(options)
+	if err != nil {
+		return err
+	}
+
+	err = client.Connect(sto.newTimeoutContext())
+	if err != nil {
+		return err
+	}
+	
+	sto.client = client
+	return nil
+}
+
+func (sto *MongoStorage) newTimeoutContext() context.Context {
+	ctx, _ := context.WithTimeout(context.Background(),sto.DefaultTimeout)
+	return ctx
+}
+
 
 //User related methods
 
