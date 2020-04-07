@@ -42,7 +42,7 @@ type IStorage interface {
 	//if the ownerID is not empty the search would be limited to the ones owned by the specified user
 	//If the limit is set to 0, no limit will be established, the same applies to the offset
 	ListLinks(ownerID string, limit, offset uint) ([]models.Link, error)
-	//UpdateUser replaces the values of the user in the storage with the non empty ones of the provided user
+	//UpdateLinkContent replaces the values of the user in the storage with the non empty ones of the provided user
 	//If the link does not exists in the storage an NotFoundError would be returned
 	//If there is a conflicting unique field this method will return an AlreadyExistsError
 	UpdateLinkContent(id, content string) error
