@@ -6,6 +6,7 @@ import (
 	"github.com/nethruster/linksh/pkg/interfaces/user_repository"
 	"github.com/nethruster/linksh/pkg/models"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -31,7 +32,7 @@ func TestMongoConnection(t *testing.T) {
 }
 
 
-func TestUser(t *testing.T) {
+func TestUserRelatedMethods(t *testing.T) {
 	var sto *Storage
 	var err error
 
@@ -128,7 +129,7 @@ func TestUser(t *testing.T) {
 
 			_, err = sto.GetUser("404")
 			if !errors.As(err, &istorage.NotFoundError{}) {
-				t.Errorf("Expected NotFound got %v", err.Error())
+				t.Errorf("Expected NotFound got %v: %v", reflect.TypeOf(err), err.Error())
 			}
 		})
 	})
@@ -179,11 +180,13 @@ func TestUser(t *testing.T) {
 			t.Error(err)
 		}
 
-		payload.ID = "404"
-		err = sto.UpdateUser(payload)
-		if !errors.As(err, &istorage.NotFoundError{}) {
-			t.Errorf("Expected NotFound got %v", err.Error())
-		}
+		t.Run("not found", func(t *testing.T) {
+			payload.ID = "404"
+			err = sto.UpdateUser(payload)
+			if !errors.As(err, &istorage.NotFoundError{}) {
+				t.Errorf("Expected NotFound got %v: %v", reflect.TypeOf(err), err.Error())
+			}
+		})
 	})
 
 	t.Run("delete", func(t *testing.T) {
@@ -192,10 +195,12 @@ func TestUser(t *testing.T) {
 			t.Error(err)
 		}
 
-		err = sto.DeleteUser("404")
-		if !errors.As(err, &istorage.NotFoundError{}) {
-			t.Errorf("Expected NotFound got %v", err.Error())
-		}
+		t.Run("not found", func(t *testing.T) {
+			err = sto.DeleteUser("404")
+			if !errors.As(err, &istorage.NotFoundError{}) {
+				t.Errorf("Expected NotFound got %v: %v", reflect.TypeOf(err), err.Error())
+			}
+		})
 	})
 }
 
