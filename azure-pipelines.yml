@@ -7,6 +7,7 @@ resources:
 
 pool:
   name: Azure Pipelines
+  vmImage: 'ubuntu-16.04'
 
 services:
   mongo: mongo
