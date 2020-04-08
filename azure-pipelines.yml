@@ -1,0 +1,27 @@
+resources:
+  containers:
+    - container: mongo
+      image: mongo
+      ports:
+        - 27017:27017
+
+pool:
+  name: Azure Pipelines
+
+services:
+  mongo: mongo
+
+variables:
+    LINKSH_TEST_MONGOSTRING: 'mongodb://localhost:27017'
+
+steps:
+- task: Go@0
+  displayName: 'go test'
+  inputs:
+    command: test
+    arguments: ./...
+- task: Go@0
+  displayName: 'go build'
+  inputs:
+    command: build
+  enabled: false
