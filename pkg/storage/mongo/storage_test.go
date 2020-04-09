@@ -34,16 +34,16 @@ func TestMongoConnection(t *testing.T) {
 
 
 func TestUserRelatedMethods(t *testing.T) {
-	var sto *Storage
+	var sto istorage.IStorage
 	var err error
 
-	sto, err = newStorage()
+	mongoSto, err := newStorage()
 	if err != nil {
 		panic("CDatabase connection failed: " + err.Error())
 	}
-	defer sto.close()
+	defer mongoSto.close()
 
-	if err = sto.client.Database(sto.databaseName).Collection(userCollectionName).Drop(sto.newTimeoutContext()); err != nil {
+	if err = mongoSto.client.Database(mongoSto.databaseName).Collection(userCollectionName).Drop(mongoSto.newTimeoutContext()); err != nil {
 		t.Errorf("Error reseting the collection: %+v", err)
 	}
 
