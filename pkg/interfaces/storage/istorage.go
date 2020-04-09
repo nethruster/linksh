@@ -52,4 +52,23 @@ type IStorage interface {
 	//IncreaseLinkHitCount increases the hits number of a link in the storage
 	//If the user does not exists in the storage an NotFoundError would be returned
 	IncreaseLinkHitCount(id string) error
+
+	// Session related methods
+
+	// SaveSession saves the session into the storage
+	// In case of unique field conflict this method will return an AlreadyExistsError
+	SaveSession(session models.Session) error
+	// GetSession gets the session with the specified ID from the storage
+	// If the session does not exists in the storage a NotFoundError will be returned
+	GetSession(id string) (models.Session, error)
+	// ListSessions lists the sessions in the storage
+	// if the ownerID is not empty the search will be limited to the ones owned by the specified user
+	// if the limit is set to 0, no limit will be established, the same applies to the offset
+	ListSessions(ownerID string, limit, offset uint) ([]models.Session, error)
+	// UpdateSessionToken updates the lastToken of a session in the storage
+	// if the session does not exists in the storage an NotFoundError would be returned
+	UpdateSessionToken(id string, tokenID string) error
+	// DeleteSession deletes a session
+	// If the session does not exists in the storage a NotFoundError will be returned
+	DeleteSession(id string) error
 }

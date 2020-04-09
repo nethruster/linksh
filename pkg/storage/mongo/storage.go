@@ -288,3 +288,28 @@ func (sto *Storage) IncreaseLinkHitCount(id string) error {
 
 	return nil
 }
+
+// Session related methods
+
+func (sto *Storage) SaveSession(session models.Session) error {
+	panic("not implemented")
+}
+
+func (sto *Storage) GetSession(id string) (models.Session, error) {
+	panic("not implemented")
+}
+
+
+func (sto *Storage) ListSessions(ownerID string, limit, offset uint) ([]models.Session, error) {
+	panic("not implemented")
+}
+
+
+func (sto *Storage) UpdateSessionToken(id string, tokenID string) error {
+	panic("not implemented")
+}
+
+
+func (sto *Storage) DeleteSession(id string) error {
+	panic("not implemented")
+}

@@ -42,6 +42,7 @@ func TestUserRelatedMethods(t *testing.T) {
 		panic("CDatabase connection failed: " + err.Error())
 	}
 	defer mongoSto.close()
+	sto = mongoSto
 
 	if err = mongoSto.client.Database(mongoSto.databaseName).Collection(userCollectionName).Drop(mongoSto.newTimeoutContext()); err != nil {
 		t.Errorf("Error reseting the collection: %+v", err)
