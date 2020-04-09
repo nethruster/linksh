@@ -5,6 +5,7 @@ import (
 	"github.com/nethruster/linksh/pkg/interfaces/link_repository"
 	sto "github.com/nethruster/linksh/pkg/interfaces/storage"
 	"github.com/nethruster/linksh/pkg/models"
+	"time"
 )
 
 //LinkRepository implements ILinkRepository
@@ -34,6 +35,7 @@ func (lr *LinkRepository) Create(id, content, ownerID string) (link models.Link,
 		ID:      id,
 		Content: content,
 		OwnerID: ownerID,
+		CreatedAt: time.Now().Unix(),
 	}
 
 	err = lr.Storage.SaveLink(link)
