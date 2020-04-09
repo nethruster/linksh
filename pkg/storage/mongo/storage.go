@@ -208,6 +208,7 @@ func (sto *Storage) GetLink(id string) (link models.Link, err error) {
 }
 
 func (sto *Storage) ListLinks(ownerID string, limit, offset uint) ([]models.Link, error) {
+	filter :=  make(bson.M)
 	options := mongoOptions.Find()
 	options.SetSort(bson.D{{"createdAt", -1}})
 	if limit != 0 {
@@ -216,8 +217,11 @@ func (sto *Storage) ListLinks(ownerID string, limit, offset uint) ([]models.Link
 	if offset != 0 {
 		options.SetSkip(int64(offset))
 	}
+	if ownerID != "" {
+		filter["ownerId"] = ownerID
+	}
 	ctx := sto.newTimeoutContext()
-	cursor, err := sto.db().Collection(linksCollectionName).Find(ctx, bson.D{}, options)
+	cursor, err := sto.db().Collection(linksCollectionName).Find(ctx, filter, options)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +239,7 @@ func (sto *Storage) UpdateLinkContent(id, content string) error {
 		return nil
 	}
 
-	result, err := sto.db().Collection(userCollectionName).
+	result, err := sto.db().Collection(linksCollectionName).
 		UpdateOne(sto.newTimeoutContext(),
 			bson.M{"_id": id},
 			bson.D{bson.E{"$set", bson.D{{"content", content}}},})
@@ -254,7 +258,7 @@ func (sto *Storage) DeleteLink(id string) error {
 	if id == "" {
 		return istorage.NewNotFoundError("links", "id", "")
 	}
-	result, err := sto.db().Collection(userCollectionName).DeleteOne(sto.newTimeoutContext(), bson.M{"_id": id})
+	result, err := sto.db().Collection(linksCollectionName).DeleteOne(sto.newTimeoutContext(), bson.M{"_id": id})
 	if err != nil {
 		return fmt.Errorf("error removing link with id \"%s\":%w", id, err)
 	}
@@ -270,7 +274,7 @@ func (sto *Storage) IncreaseLinkHitCount(id string) error {
 		return istorage.NewNotFoundError("links", "id", "")
 	}
 
-	result, err := sto.db().Collection(userCollectionName).
+	result, err := sto.db().Collection(linksCollectionName).
 		UpdateOne(sto.newTimeoutContext(),
 			bson.M{"_id": id},
 			bson.D{bson.E{"$inc", bson.D{{"hits", 1}}},})
